@@ -1,9 +1,7 @@
 import model.InputData;
-import model.Rate;
 import service.*;
 
 import java.math.BigDecimal;
-import java.util.List;
 
 public class Main {
 
@@ -15,7 +13,12 @@ public class Main {
                 .withMonthsDuration(BigDecimal.valueOf(160));
 
         PrintingService printingService = new PrintingServiceImpl();
-        RateCalculationService rateCalculationService = new RateCalculationServiceImpl();
+        RateCalculationService rateCalculationService = new RateCalculationServiceImpl(
+                new TimePointServiceImpl(),
+                new AmountsCalculateServiceImpl(),
+                new ResidualCalculationServiceImpl()
+
+        );
 
         MortgageCalculationServiceImpl mortgageCalculationService = new MortgageCalculationServiceImpl(printingService
         ,rateCalculationService);
