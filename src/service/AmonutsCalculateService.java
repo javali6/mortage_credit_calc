@@ -1,9 +1,12 @@
 package service;
 
+import model.InputData;
+import model.Rate;
 import model.RateAmounts;
-import model.TimePoint;
 
 public interface AmonutsCalculateService {
 
-        public RateAmounts calculate();
+        public RateAmounts calculate(InputData inputData);
+
+        RateAmounts calculate(InputData inputData, Rate previousRate);
 }

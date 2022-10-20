@@ -14,7 +14,7 @@ public class RateCalculationServiceImpl implements RateCalculationService {
 
     private final ResidualCalculationService residualCalculationService;
 
-    public RateCalculationServiceImpl(TimePointService timePointService, 
+    public RateCalculationServiceImpl(TimePointService timePointService,
                                       AmonutsCalculateService amonutsCalculateService,
                                       ResidualCalculationService residualCalculationService) {
         this.timePointService = timePointService;
@@ -48,8 +48,8 @@ public class RateCalculationServiceImpl implements RateCalculationService {
 
     private Rate calculateRate(BigDecimal rateNumber, InputData inputData) {
 
-        TimePoint timePoint = timePointService.calculate();
-        RateAmounts rateAmounts = amonutsCalculateService.calculate();
+        TimePoint timePoint = timePointService.calculate(rateNumber, inputData);
+        RateAmounts rateAmounts = amonutsCalculateService.calculate(inputData);
         MortgageResidual mortgageResidual = residualCalculationService.calculate();
 
         return new Rate(rateNumber, timePoint, rateAmounts, mortgageResidual);
@@ -57,7 +57,11 @@ public class RateCalculationServiceImpl implements RateCalculationService {
     }
 
     private Rate calculateRate(BigDecimal rateNumber, InputData inputData, Rate previousRate) {
-        return null;
+        TimePoint timePoint = timePointService.calculate(rateNumber, inputData);
+        RateAmounts rateAmounts = amonutsCalculateService.calculate(inputData, previousRate);
+        MortgageResidual mortgageResidual = residualCalculationService.calculate();
+
+        return new Rate(rateNumber, timePoint, rateAmounts, mortgageResidual);
 
     }
 }
