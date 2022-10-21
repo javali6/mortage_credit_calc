@@ -9,8 +9,8 @@ public class Main {
 
 
         InputData inputData = new InputData()
-                .withAmount(new BigDecimal(300000))
-                .withMonthsDuration(BigDecimal.valueOf(160));
+                .withAmount(new BigDecimal(245000))
+                .withMonthsDuration(BigDecimal.valueOf(180));
 
         PrintingService printingService = new PrintingServiceImpl();
         RateCalculationService rateCalculationService = new RateCalculationServiceImpl(
