@@ -25,5 +25,7 @@ public class MortgageCalculationServiceImpl implements  MortgageCalculationServi
 
         List<Rate> calculate = rateCalculationService.calculate(inputData);
 
+        printingService.printRates(calculate);
+
     }
 }

@@ -3,6 +3,7 @@ package service;
 import model.InputData;
 import model.Rate;
 import model.RateAmounts;
+import model.exeption.RateCalculationException;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -19,7 +20,7 @@ public class AmountsCalculateServiceImpl implements AmonutsCalculateService {
             case DECREASING:
                 return calculateDecreasingRate(inputData, previousRate);
             default:
-                throw new RuntimeException("Case not handled");
+                throw new RateCalculationException();
         }
     }
     @Override
@@ -30,7 +31,7 @@ public class AmountsCalculateServiceImpl implements AmonutsCalculateService {
             case DECREASING:
                 return calculateDecreasingRate(inputData);
             default:
-                throw new RuntimeException("Case not handled");
+                throw new RateCalculationException();
         }
     }
 
