@@ -1,6 +1,7 @@
 package service;
 
 import model.InputData;
+import model.Overpayment;
 import model.Rate;
 import model.RateAmounts;
 import model.exeption.RateCalculationException;
@@ -8,35 +9,35 @@ import model.exeption.RateCalculationException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
-public class AmountsCalculateServiceImpl implements AmonutsCalculateService {
+public class AmountsCalculateServiceImpl implements AmountsCalculateService {
 
     private final static BigDecimal YEAR = BigDecimal.valueOf(12);
 
     @Override
-    public RateAmounts calculate(InputData inputData, Rate previousRate) {
+    public RateAmounts calculate(InputData inputData, Overpayment overpayment, Rate previousRate) {
         switch (inputData.getRateType()) {
             case CONSTANT:
-                return calculateConstantRate(inputData, previousRate);
+                return calculateConstantRate(inputData,overpayment);
             case DECREASING:
-                return calculateDecreasingRate(inputData, previousRate);
+                return calculateDecreasingRate(inputData,overpayment);
             default:
                 throw new RateCalculationException();
         }
     }
     @Override
-    public RateAmounts calculate(InputData inputData) {
+    public RateAmounts calculate(InputData inputData, Overpayment overpayment) {
         switch (inputData.getRateType()) {
             case CONSTANT:
-                return calculateConstantRate(inputData);
+                return calculateConstantRate(inputData, overpayment);
             case DECREASING:
-                return calculateDecreasingRate(inputData);
+                return calculateDecreasingRate(inputData, overpayment);
             default:
                 throw new RateCalculationException();
         }
     }
 
     //CALCULATING CONSTANT RATES
-    private RateAmounts calculateConstantRate(InputData inputData) {
+    private RateAmounts calculateConstantRate(InputData inputData, Overpayment overpayment) {
         BigDecimal interestPercent = inputData.getInterestPercent();
         BigDecimal residualAmount = inputData.getAmount();
 
@@ -46,11 +47,13 @@ public class AmountsCalculateServiceImpl implements AmonutsCalculateService {
         BigDecimal interestAmount = calculateInterestAmount(residualAmount, interestPercent);
         BigDecimal capitalAmount = calculateConstantCapitalAmount(rateAmount, interestAmount);
 
-        return new RateAmounts(rateAmount, interestAmount, capitalAmount);
+
+
+        return new RateAmounts(rateAmount, interestAmount, capitalAmount, overpayment);
     }
 
 
-    private RateAmounts calculateConstantRate(InputData inputData, Rate previousRate) {
+    private RateAmounts calculateConstantRate(InputData inputData, Overpayment overpayment, Rate previousRate) {
         BigDecimal interestPercent = inputData.getInterestPercent();
         BigDecimal amountResidual = previousRate.getMortgageResidual().getAmount();
 
@@ -60,12 +63,12 @@ public class AmountsCalculateServiceImpl implements AmonutsCalculateService {
         BigDecimal interestAmount = calculateInterestAmount(amountResidual, interestPercent);
         BigDecimal capitalAmount = calculateConstantCapitalAmount(rateAmount, interestAmount);
 
-        return new RateAmounts(rateAmount, interestAmount, capitalAmount);
+        return new RateAmounts(rateAmount, interestAmount, capitalAmount, overpayment);
     }
 
     //CALCULATING DECREASING RATES
 
-    private RateAmounts calculateDecreasingRate(InputData inputData) {
+    private RateAmounts calculateDecreasingRate(InputData inputData, Overpayment overpayment) {
         BigDecimal interestPercent = inputData.getInterestPercent();
         BigDecimal residualAmount = inputData.getAmount();
 
@@ -74,10 +77,10 @@ public class AmountsCalculateServiceImpl implements AmonutsCalculateService {
                 , inputData.getMonthsDuration());
         BigDecimal rateAmount = capitalAmount.add(interestAmount);
 
-        return new RateAmounts(rateAmount, interestAmount, capitalAmount);
+        return new RateAmounts(rateAmount, interestAmount, capitalAmount, overpayment);
     }
 
-    private RateAmounts calculateDecreasingRate(InputData inputData, Rate previousRate) {
+    private RateAmounts calculateDecreasingRate(InputData inputData, Overpayment overpayment, Rate previousRate) {
         BigDecimal interestPercent = inputData.getInterestPercent();
         BigDecimal residualAmount = previousRate.getMortgageResidual().getAmount();;
 
@@ -86,11 +89,11 @@ public class AmountsCalculateServiceImpl implements AmonutsCalculateService {
                 ,inputData.getMonthsDuration());
         BigDecimal rateAmount = capitalAmount.add(interestAmount);
 
-        return new RateAmounts(rateAmount, interestAmount, capitalAmount);
+        return new RateAmounts(rateAmount, interestAmount, capitalAmount, overpayment);
     }
 
     private BigDecimal calculateDecreasingCapitalAmount(BigDecimal amount, BigDecimal monthsDuration) {
-        return amount.divide(monthsDuration, 2, RoundingMode.HALF_UP);
+        return amount.divide(monthsDuration, 50, RoundingMode.HALF_UP);
     }
 
     //HELPING METHODS FOR CALCULATE CONSTANT METHODS
@@ -103,11 +106,11 @@ public class AmountsCalculateServiceImpl implements AmonutsCalculateService {
         return amount
                 .multiply(q.pow(monthsDuration.intValue()))
                 .multiply(q.subtract(BigDecimal.ONE))
-                .divide(q.pow(monthsDuration.intValue()).subtract(BigDecimal.ONE), 2, RoundingMode.HALF_UP);
+                .divide(q.pow(monthsDuration.intValue()).subtract(BigDecimal.ONE), 50, RoundingMode.HALF_UP);
     }
 
     private BigDecimal calculateInterestAmount(BigDecimal residualAmount, BigDecimal interestPercent) {
-        return residualAmount.multiply(interestPercent).divide(YEAR, 2, RoundingMode.HALF_UP);
+        return residualAmount.multiply(interestPercent).divide(YEAR, 50, RoundingMode.HALF_UP);
     }
 
     private BigDecimal calculateConstantCapitalAmount(BigDecimal rateAmount, BigDecimal interestAmount) {

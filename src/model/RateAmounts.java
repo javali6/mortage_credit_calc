@@ -11,14 +11,18 @@ public class RateAmounts {
 
     private final BigDecimal capitalAmount;
 
-    public RateAmounts(BigDecimal rateAmount, BigDecimal interestAmount, BigDecimal capitalAmount) {
+    private final Overpayment overpayment;
+
+    public RateAmounts(BigDecimal rateAmount, BigDecimal interestAmount
+            , BigDecimal capitalAmount, Overpayment overpayment) {
         this.rateAmount = rateAmount;
         this.interestAmount = interestAmount;
         this.capitalAmount = capitalAmount;
+        this.overpayment = overpayment;
     }
 
     public BigDecimal getRateAmount() {
-        return rateAmount.setScale(2, RoundingMode.HALF_UP);
+        return rateAmount.setScale(2 , RoundingMode.HALF_UP);
     }
 
 
@@ -31,12 +35,7 @@ public class RateAmounts {
         return capitalAmount.setScale(2, RoundingMode.UP);
     }
 
-    @Override
-    public String toString() {
-        return "RateAmounts{" +
-                "rateAmount=" + rateAmount +
-                ", interestAmount=" + interestAmount +
-                ", capitalAmount=" + capitalAmount +
-                '}';
+    public Overpayment getOverpayment() {
+        return overpayment;
     }
 }
