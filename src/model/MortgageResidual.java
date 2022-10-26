@@ -22,11 +22,4 @@ public class MortgageResidual {
         return duration.setScale(2, RoundingMode.UP);
     }
 
-    @Override
-    public String toString() {
-        return "MortgageResidual{" +
-                "amount=" + amount +
-                ", duration=" + duration +
-                '}';
-    }
 }

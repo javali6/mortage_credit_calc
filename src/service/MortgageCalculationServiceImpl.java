@@ -2,6 +2,7 @@ package service;
 
 import model.InputData;
 import model.Rate;
+import model.Summary;
 
 import java.util.List;
 
@@ -12,10 +13,14 @@ public class MortgageCalculationServiceImpl implements  MortgageCalculationServi
 
     private final RateCalculationService rateCalculationService;
 
+    private final SummaryService summaryService;
+
     public MortgageCalculationServiceImpl(PrintingService printingService,
-                                          RateCalculationService rateCalculationService) {
+                                          RateCalculationService rateCalculationService,
+                                          SummaryService summaryService) {
         this.printingService = printingService;
         this.rateCalculationService = rateCalculationService;
+        this.summaryService = summaryService;
     }
 
     @Override
@@ -23,9 +28,12 @@ public class MortgageCalculationServiceImpl implements  MortgageCalculationServi
 
         printingService.printInputDataInfo(inputData);
 
-        List<Rate> calculate = rateCalculationService.calculate(inputData);
+        List<Rate> rates = rateCalculationService.calculate(inputData);
 
-        printingService.printRates(calculate);
+        Summary summary = summaryService.calculate(rates);
+        printingService.printSummary(summary);
+
+        printingService.printRates(rates);
 
     }
 }

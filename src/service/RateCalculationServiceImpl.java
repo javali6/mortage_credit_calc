@@ -3,6 +3,7 @@ package service;
 import model.*;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -10,16 +11,24 @@ public class RateCalculationServiceImpl implements RateCalculationService {
 
     private final TimePointService timePointService;
 
-    private final AmonutsCalculateService amonutsCalculateService;
+    private final AmountsCalculateService amountsCalculateService;
 
     private final ResidualCalculationService residualCalculationService;
 
+    private final OverpaymentCalculationService overpaymentCalculationService;
+
+    private final ReferenceCalculationService referenceCalculationService;
+
     public RateCalculationServiceImpl(TimePointService timePointService,
-                                      AmonutsCalculateService amonutsCalculateService,
-                                      ResidualCalculationService residualCalculationService) {
+                                      AmountsCalculateService amountsCalculateService,
+                                      ResidualCalculationService residualCalculationService,
+                                      ReferenceCalculationService referenceCalculationService,
+                                      OverpaymentCalculationService overpaymentCalculationService) {
         this.timePointService = timePointService;
-        this.amonutsCalculateService = amonutsCalculateService;
+        this.amountsCalculateService = amountsCalculateService;
         this.residualCalculationService = residualCalculationService;
+        this.overpaymentCalculationService = overpaymentCalculationService;
+        this.referenceCalculationService = referenceCalculationService;
     }
 
     @Override
@@ -40,6 +49,12 @@ public class RateCalculationServiceImpl implements RateCalculationService {
             Rate nextRate = calculateRate(index, inputData, previousRate);
             rates.add(nextRate);
             previousRate = nextRate;
+
+            if (BigDecimal.ZERO.equals(nextRate.getMortgageResidual().getAmount()
+                    .setScale(0, RoundingMode.HALF_UP))) {
+                break;
+            }
+
         }
 
         return rates;
@@ -49,19 +64,26 @@ public class RateCalculationServiceImpl implements RateCalculationService {
     private Rate calculateRate(BigDecimal rateNumber, InputData inputData) {
 
         TimePoint timePoint = timePointService.calculate(rateNumber, inputData);
-        RateAmounts rateAmounts = amonutsCalculateService.calculate(inputData);
+        Overpayment overpayment = overpaymentCalculationService.calculate(rateNumber, inputData);
+        RateAmounts rateAmounts = amountsCalculateService.calculate(inputData, overpayment);
         MortgageResidual mortgageResidual = residualCalculationService.calculate(rateAmounts, inputData);
 
-        return new Rate(rateNumber, timePoint, rateAmounts, mortgageResidual);
+        MortgageReference mortgageReference = referenceCalculationService.calculate(inputData);
+
+        return new Rate(rateNumber, timePoint, rateAmounts, mortgageResidual, mortgageReference);
 
     }
 
     private Rate calculateRate(BigDecimal rateNumber, InputData inputData, Rate previousRate) {
         TimePoint timePoint = timePointService.calculate(rateNumber, inputData);
-        RateAmounts rateAmounts = amonutsCalculateService.calculate(inputData, previousRate);
+        Overpayment overpayment = overpaymentCalculationService.calculate(rateNumber, inputData);
+        RateAmounts rateAmounts = amountsCalculateService.calculate(inputData, overpayment, previousRate);
         MortgageResidual mortgageResidual = residualCalculationService.calculate(rateAmounts, previousRate);
 
-        return new Rate(rateNumber, timePoint, rateAmounts, mortgageResidual);
+
+        MortgageReference mortgageReference = referenceCalculationService.calculate(inputData);
+
+        return new Rate(rateNumber, timePoint, rateAmounts, mortgageResidual, mortgageReference);
 
     }
 }
